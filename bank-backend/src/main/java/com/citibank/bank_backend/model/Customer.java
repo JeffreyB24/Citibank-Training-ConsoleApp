@@ -1,5 +1,8 @@
 package com.citibank.bank_backend.model;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -9,9 +12,18 @@ public class Customer {
     @Id
     private String id;
 
+    @NotBlank(message = "First name is required.")
     private String firstName;
+
+    @NotBlank(message = "Last name is required.")
     private String lastName;
+
+    @NotBlank(message = "Username is required.")
+    @Size(min = 4, message = "Username must be at least 4 characters.")
     private String username;
+
+    @NotBlank(message = "Password is required.")
+    @Size(min = 8, message = "Password must be at least 8 characters.")
     private String password;
 
     public Customer() {

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import com.citibank.bank_backend.dto.CreateAccountRequest;
 import com.citibank.bank_backend.model.Account;
@@ -17,6 +18,8 @@ import com.citibank.bank_backend.service.AccountService;
 import com.citibank.bank_backend.dto.AmountRequest;
 import com.citibank.bank_backend.model.Transaction;
 import com.citibank.bank_backend.dto.TransferRequest;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -33,7 +36,7 @@ public class AccountController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Account createAccount(
-            @RequestBody CreateAccountRequest request
+            @Valid @RequestBody CreateAccountRequest request
     ) {
         return accountService.createAccount(request);
     }
@@ -60,12 +63,12 @@ public class AccountController {
     }
 
     @PostMapping("/{accountId}/deposit")
-    public Account deposit(@PathVariable String accountId, @RequestBody AmountRequest request) {
+    public Account deposit(@PathVariable String accountId, @Valid @RequestBody AmountRequest request) {
         return accountService.deposit(accountId, request.getAmount());
     }
 
     @PostMapping("/{accountId}/withdraw")
-    public Account withdraw(@PathVariable String accountId, @RequestBody AmountRequest request) {
+    public Account withdraw(@PathVariable String accountId, @Valid @RequestBody AmountRequest request) {
         return accountService.withdraw(accountId, request.getAmount());
     }
 
@@ -75,7 +78,16 @@ public class AccountController {
     }
 
     @PostMapping("/transfer")
-    public void transfer(@RequestBody TransferRequest request) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void transfer(@Valid @RequestBody TransferRequest request) {
         accountService.transfer(request);
+    }
+
+    @DeleteMapping("/{accountId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteAccount(
+        @PathVariable String accountId
+    ) {
+        accountService.deleteAccount(accountId);
     }
 }

@@ -4,10 +4,19 @@ import java.math.BigDecimal;
 
 import com.citibank.bank_backend.model.AccountType;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public class CreateAccountRequest {
     
+    @NotBlank(message = "Customer ID is required.")
     private String customerId;
+
+    @NotNull(message = "Account type is required.")
     private AccountType accountType;
+
+    @DecimalMin(value = "0.00", message = "Starting balance cannot be negative.")
     private BigDecimal startingBalance;
 
     public CreateAccountRequest() {

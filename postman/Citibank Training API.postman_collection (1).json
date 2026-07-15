@@ -1,0 +1,1094 @@
+{
+  "info": {
+    "_postman_id": "b5805ecb-c506-4290-a7eb-015649559f1c",
+    "name": "Citibank Training API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56630649",
+    "_collection_link": "https://go.postman.co/collection/56630649-b5805ecb-c506-4290-a7eb-015649559f1c?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Create Hello",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response is JSON\", function () {\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Hello message is correct\", function () {\r",
+                  "    const response = pm.response.json();\r",
+                  "\r",
+                  "    pm.expect(response.message)\r",
+                  "        .to.eql(\"Hello from the Citibank backend!\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/hello",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hello"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "Create Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response is JSON\", function () {\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Customer has an ID\", function () {\r",
+                  "    pm.expect(response.id)\r",
+                  "        .to.be.a(\"string\")\r",
+                  "        .and.not.empty;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Customer name is correct\", function () {\r",
+                  "    pm.expect(response.firstName).to.eql(\"Postman\");\r",
+                  "    pm.expect(response.lastName).to.eql(\"Tester\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Password is not exposed\", function () {\r",
+                  "    pm.expect(response).to.not.have.property(\"password\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.collectionVariables.set(\r",
+                  "    \"customerId\",\r",
+                  "    response.id\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"firstName\": \"Postman\",\r\n  \"lastName\": \"Tester\",\r\n  \"username\": \"postmanTester{{$timestamp}}\",\r\n  \"password\": \"password123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "customers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Customers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response is an array\", function () {\r",
+                  "    const response = pm.response.json();\r",
+                  "\r",
+                  "    pm.expect(response).to.be.an(\"array\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Created customer appears in the list\", function () {\r",
+                  "    const response = pm.response.json();\r",
+                  "    const customerId =\r",
+                  "        pm.collectionVariables.get(\"customerId\");\r",
+                  "\r",
+                  "    const found = response.some(\r",
+                  "        customer => customer.id === customerId\r",
+                  "    );\r",
+                  "\r",
+                  "    pm.expect(found).to.be.true;\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"firstName\": \"Postman\",\r\n  \"lastName\": \"Tester\",\r\n  \"username\": \"postmanTester{{$timestamp}}\",\r\n  \"password\": \"password123\"\r\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "customers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Customer by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Correct customer is returned\", function () {\r",
+                  "    const customerId =\r",
+                  "        pm.collectionVariables.get(\"customerId\");\r",
+                  "\r",
+                  "    pm.expect(response.id).to.eql(customerId);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Password is not exposed\", function () {\r",
+                  "    pm.expect(response).to.not.have.property(\"password\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{customerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "{{customerId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Accounts",
+      "item": [
+        {
+          "name": "Create Checking Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Checking account has an ID\", function () {\r",
+                  "    pm.expect(response.id)\r",
+                  "        .to.be.a(\"string\")\r",
+                  "        .and.not.empty;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Account type is CHECKING\", function () {\r",
+                  "    pm.expect(response.accountType)\r",
+                  "        .to.eql(\"CHECKING\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Starting balance is 1000\", function () {\r",
+                  "    pm.expect(Number(response.balance))\r",
+                  "        .to.eql(1000);\r",
+                  "});\r",
+                  "\r",
+                  "pm.collectionVariables.set(\r",
+                  "    \"checkingAccountId\",\r",
+                  "    response.id\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"customerId\": \"{{customerId}}\",\r\n  \"accountType\": \"CHECKING\",\r\n  \"startingBalance\": 1000.00\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Savings Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Savings account has an ID\", function () {\r",
+                  "    pm.expect(response.id)\r",
+                  "        .to.be.a(\"string\")\r",
+                  "        .and.not.empty;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Account type is SAVINGS\", function () {\r",
+                  "    pm.expect(response.accountType)\r",
+                  "        .to.eql(\"SAVINGS\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Starting balance is 2500\", function () {\r",
+                  "    pm.expect(Number(response.balance))\r",
+                  "        .to.eql(2500);\r",
+                  "});\r",
+                  "\r",
+                  "pm.collectionVariables.set(\r",
+                  "    \"savingsAccountId\",\r",
+                  "    response.id\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"customerId\": \"{{customerId}}\",\r\n  \"accountType\": \"SAVINGS\",\r\n  \"startingBalance\": 2500.00\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Accounts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response is an array\", function () {\r",
+                  "    const response = pm.response.json();\r",
+                  "\r",
+                  "    pm.expect(response).to.be.an(\"array\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"customerId\": \"{{customerId}}\",\r\n  \"accountType\": \"SAVINGS\",\r\n  \"startingBalance\": 2500.00\r\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Checking Account by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Correct checking account is returned\", function () {\r",
+                  "    const accountId =\r",
+                  "        pm.collectionVariables.get(\r",
+                  "            \"checkingAccountId\"\r",
+                  "        );\r",
+                  "\r",
+                  "    pm.expect(response.id).to.eql(accountId);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"customerId\": \"{{customerId}}\",\r\n  \"accountType\": \"SAVINGS\",\r\n  \"startingBalance\": 2500.00\r\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/{{checkingAccountId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounts",
+                "{{checkingAccountId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Accounts by Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Customer has two accounts\", function () {\r",
+                  "    const response = pm.response.json();\r",
+                  "\r",
+                  "    pm.expect(response.length)\r",
+                  "        .to.be.at.least(2);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/customer/{{customerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounts",
+                "customer",
+                "{{customerId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "Deposit into Checking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Checking balance is now 1500\", function () {\r",
+                  "    pm.expect(Number(response.balance))\r",
+                  "        .to.eql(1500);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"amount\": 500.00\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/{{checkingAccountId}}/deposit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounts",
+                "{{checkingAccountId}}",
+                "deposit"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Withdraw from Checking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Checking balance is now 1300\", function () {\r",
+                  "    pm.expect(Number(response.balance))\r",
+                  "        .to.eql(1300);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"amount\": 200.00\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/{{checkingAccountId}}/withdraw",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounts",
+                "{{checkingAccountId}}",
+                "withdraw"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Transfer Checking to Savings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {\r",
+                  "    pm.response.to.have.status(204);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"fromAccountId\": \"{{checkingAccountId}}\",\r\n  \"toAccountId\": \"{{savingsAccountId}}\",\r\n  \"amount\": 300.00\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/transfer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounts",
+                "transfer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Checking Transactions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response is an array\", function () {\r",
+                  "    const response = pm.response.json();\r",
+                  "\r",
+                  "    pm.expect(response).to.be.an(\"array\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Checking transaction history is not empty\", function () {\r",
+                  "    const response = pm.response.json();\r",
+                  "\r",
+                  "    pm.expect(response.length)\r",
+                  "        .to.be.greaterThan(0);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Transfer out exists\", function () {\r",
+                  "    const response = pm.response.json();\r",
+                  "\r",
+                  "    const found = response.some(\r",
+                  "        transaction =>\r",
+                  "            transaction.type === \"TRANSFER_OUT\"\r",
+                  "    );\r",
+                  "\r",
+                  "    pm.expect(found).to.be.true;\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/{{checkingAccountId}}/transactions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounts",
+                "{{checkingAccountId}}",
+                "transactions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Savings Transactions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Transfer in exists\", function () {\r",
+                  "    const response = pm.response.json();\r",
+                  "\r",
+                  "    const found = response.some(\r",
+                  "        transaction =>\r",
+                  "            transaction.type === \"TRANSFER_IN\"\r",
+                  "    );\r",
+                  "\r",
+                  "    pm.expect(found).to.be.true;\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/{{savingsAccountId}}/transactions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounts",
+                "{{savingsAccountId}}",
+                "transactions"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Error Tests",
+      "item": [
+        {
+          "name": "Negative Deposit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"amount\": -50\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/{{checkingAccountId}}/deposit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounts",
+                "{{checkingAccountId}}",
+                "deposit"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Overdraft Withdrawal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});\r",
+                  "\r",
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Insufficient funds message is returned\", function () {\r",
+                  "    pm.expect(response.message)\r",
+                  "        .to.include(\"Insufficient funds\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"amount\": 999999.00\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/{{checkingAccountId}}/withdraw",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounts",
+                "{{checkingAccountId}}",
+                "withdraw"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Same Account Transfer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"fromAccountId\": \"{{checkingAccountId}}\",\r\n  \"toAccountId\": \"{{checkingAccountId}}\",\r\n  \"amount\": 50.00\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/transfer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounts",
+                "transfer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Account Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {\r",
+                  "    pm.response.to.have.status(404);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/not-a-real-account-id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounts",
+                "not-a-real-account-id"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cleanup",
+      "item": [
+        {
+          "name": "Delete Checking Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {\r",
+                  "    pm.response.to.have.status(204);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/{{checkingAccountId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounts",
+                "{{checkingAccountId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Savings Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {\r",
+                  "    pm.response.to.have.status(204);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/accounts/{{savingsAccountId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accounts",
+                "{{savingsAccountId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {\r",
+                  "    pm.response.to.have.status(204);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/customers/{{customerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "customers",
+                "{{customerId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": ""
+    },
+    {
+      "key": "customerId",
+      "value": ""
+    },
+    {
+      "key": "checkingAccountId",
+      "value": ""
+    },
+    {
+      "key": "savingsAccountId",
+      "value": ""
+    }
+  ]
+}

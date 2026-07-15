@@ -14,6 +14,7 @@ import com.citibank.bank_backend.repository.CustomerRepository;
 import com.citibank.bank_backend.model.Transaction;
 import com.citibank.bank_backend.model.TransactionType;
 import com.citibank.bank_backend.repository.TransactionRepository;
+import com.citibank.bank_backend.exception.ResourceNotFoundException;
 
 @Service
 public class AccountService {
@@ -46,7 +47,7 @@ public class AccountService {
         if (!customerRepository.existsById(
                 request.getCustomerId()
         )) {
-            throw new IllegalArgumentException(
+            throw new ResourceNotFoundException(
                     "Customer was not found."
             );
         }
@@ -88,7 +89,7 @@ public class AccountService {
     public Account getAccountById(String accountId) {
         return accountRepository.findById(accountId)
                 .orElseThrow(
-                        () -> new IllegalArgumentException(
+                        () -> new ResourceNotFoundException(
                                 "Account was not found."
                         )
                 );
@@ -99,7 +100,7 @@ public class AccountService {
     ) {
 
         if (!customerRepository.existsById(customerId)) {
-            throw new IllegalArgumentException(
+            throw new ResourceNotFoundException(
                     "Customer was not found."
             );
         }
@@ -117,7 +118,7 @@ public class AccountService {
         Account account = accountRepository
                     .findById(accountId)
                     .orElseThrow(
-                            () -> new IllegalArgumentException("Account was not found.")
+                            () -> new ResourceNotFoundException("Account was not found.")
                     );
         
         BigDecimal newBalance = account.getBalance().add(amount);
@@ -146,11 +147,11 @@ public class AccountService {
         Account account = accountRepository
                     .findById(accountId)
                     .orElseThrow(
-                            () -> new IllegalArgumentException("Account was not found.")
+                            () -> new ResourceNotFoundException("Account was not found.")
                     );
 
         if (amount.compareTo(account.getBalance()) > 0) {
-            throw new IllegalArgumentException("Insuffient funds.");
+            throw new IllegalArgumentException("Insufficient funds.");
         }
 
         BigDecimal newBalance = account.getBalance().subtract(amount);
@@ -175,7 +176,7 @@ public class AccountService {
         String accountId
     ) {
         if (!accountRepository.existsById(accountId)) {
-            throw new IllegalArgumentException("Account was not found.");
+            throw new ResourceNotFoundException("Account was not found.");
         }
 
         return transactionRepository
@@ -194,12 +195,12 @@ public class AccountService {
     Account fromAccount = accountRepository
             .findById(request.getFromAccountId())
             .orElseThrow(() ->
-                    new IllegalArgumentException("Source account not found."));
+                    new ResourceNotFoundException("Source account not found."));
 
     Account toAccount = accountRepository
             .findById(request.getToAccountId())
             .orElseThrow(() ->
-                    new IllegalArgumentException("Destination account not found."));
+                    new ResourceNotFoundException("Destination account not found."));
 
     if (fromAccount.getId().equals(toAccount.getId())) {
         throw new IllegalArgumentException(
@@ -235,6 +236,36 @@ public class AccountService {
                     TransactionType.TRANSFER_IN,
                     request.getAmount(),
                     toAccount.getBalance()));
+    }
+
+    public void deleteAccount(String accountId) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Account was not found.")
+                );
+        
+        transactionRepository.deleteAll(
+                transactionRepository.findByAccountIdOrderByCreatedAtDesc(accountId)
+        );
+
+        accountRepository.delete(account);
+    }
+
+    public void deleteCustomer(String customerId) {
+        if (!customerRepository.existsById(customerId)) {
+                throw new ResourceNotFoundException("Customer was not found.");
+        }
+
+        List<Account> customerAccounts = accountRepository.findByCustomerId(customerId);
+
+        for (Account account : customerAccounts) {
+                transactionRepository.deleteAll(
+                        transactionRepository.findByAccountIdOrderByCreatedAtDesc(account.getId())
+                );
+        }
+
+        accountRepository.deleteAll(customerAccounts);
+        customerRepository.deleteById(customerId);
     }
 }
 

@@ -1,24 +1,40 @@
 package com.citibank.bank_backend.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.citibank.bank_backend.model.Customer;
 import com.citibank.bank_backend.repository.CustomerRepository;
+import com.citibank.bank_backend.exception.ResourceNotFoundException;
+import com.citibank.bank_backend.dto.CustomerResponse;
+import com.citibank.bank_backend.model.Account;
+import com.citibank.bank_backend.repository.AccountRepository;
+import com.citibank.bank_backend.repository.TransactionRepository;
 
 @Service
 public class CustomerService {
 
+    private final AccountRepository accountRepository;
+    private final TransactionRepository transactionRepository;
     private final CustomerRepository customerRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public CustomerService(
-            CustomerRepository customerRepository
+            CustomerRepository customerRepository,
+            PasswordEncoder passwordEncoder, 
+            TransactionRepository transactionRepository, 
+            AccountRepository accountRepository
     ) {
         this.customerRepository = customerRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.transactionRepository = transactionRepository;
+        this.accountRepository = accountRepository;
     }
 
-    public Customer createCustomer(Customer customer) {
+    public CustomerResponse createCustomer(Customer customer) {
 
         if (customerRepository.existsByUsername(
                 customer.getUsername()
@@ -28,19 +44,52 @@ public class CustomerService {
             );
         }
 
-        return customerRepository.save(customer);
+        if (customer.getPassword() == null || customer.getPassword().isBlank()) {
+            throw new IllegalArgumentException("Password is required");
+        }
+
+        String hashedPassword = passwordEncoder.encode(customer.getPassword());
+
+        customer.setPassword(hashedPassword);
+
+        Customer savedCustomer = customerRepository.save(customer);
+
+        return new CustomerResponse(savedCustomer);
     }
 
-    public List<Customer> getAllCustomers() {
-        return customerRepository.findAll();
+    public List<CustomerResponse> getAllCustomers() {
+        return customerRepository.findAll()
+            .stream()
+            .map(CustomerResponse::new)
+            .collect(Collectors.toList());
     }
 
-    public Customer getCustomerById(String id) {
-        return customerRepository.findById(id)
-                .orElseThrow(
-                        () -> new IllegalArgumentException(
-                                "Customer not found."
-                        )
-                );
+    public CustomerResponse getCustomerById(String id) {
+
+        Customer customer = customerRepository.findById(id)
+            .orElseThrow(
+                () -> new ResourceNotFoundException(
+                    "Customer not found."
+                )
+            );
+
+        return new CustomerResponse(customer);
+    }
+
+    public void deleteCustomer(String customerId) {
+        if (!customerRepository.existsById(customerId)) {
+            throw new ResourceNotFoundException("Customer was not found.");
+        }
+
+        List<Account> accounts = accountRepository.findByCustomerId(customerId);
+
+        for (Account account : accounts) {
+            transactionRepository.deleteAll(
+                transactionRepository.findByAccountIdOrderByCreatedAtDesc(account.getId())
+            );
+        }
+
+        accountRepository.deleteAll(accounts);
+        customerRepository.deleteById(customerId);
     }
 }
