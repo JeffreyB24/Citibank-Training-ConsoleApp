@@ -13,6 +13,7 @@ import com.citibank.bank_backend.dto.CustomerResponse;
 import com.citibank.bank_backend.model.Account;
 import com.citibank.bank_backend.repository.AccountRepository;
 import com.citibank.bank_backend.repository.TransactionRepository;
+import com.citibank.bank_backend.model.Role;
 
 @Service
 public class CustomerService {
@@ -51,6 +52,7 @@ public class CustomerService {
         String hashedPassword = passwordEncoder.encode(customer.getPassword());
 
         customer.setPassword(hashedPassword);
+        customer.setRole(Role.CUSTOMER);
 
         Customer savedCustomer = customerRepository.save(customer);
 

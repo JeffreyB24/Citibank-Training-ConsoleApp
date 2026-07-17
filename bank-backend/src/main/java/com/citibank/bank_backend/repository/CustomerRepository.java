@@ -11,7 +11,7 @@ import java.util.List;
 public interface CustomerRepository 
             extends MongoRepository<Customer, String> {
     Optional<Customer> findByUsername(String username);
-
+    
     boolean existsByUsername(String username);
 
 } 

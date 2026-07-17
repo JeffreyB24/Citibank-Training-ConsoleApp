@@ -1,64 +1,116 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import bankApi from "../../api/bankApi";
 
 function MyAccountsPage() {
+  const [accounts, setAccounts] =
+    useState([]);
 
-    // Temporary until login is added tomorrow
-    const customerId = "6a567cb37de1c2533d9f3985";
+  const [loading, setLoading] =
+    useState(true);
 
-    const [accounts, setAccounts] = useState([]);
+  const [error, setError] =
+    useState("");
 
-    useEffect(() => {
-        loadAccounts();
-    }, []);
+  useEffect(() => {
+    loadAccounts();
+  }, []);
 
-    async function loadAccounts() {
+  async function loadAccounts() {
+    setLoading(true);
+    setError("");
 
-        const response =
-            await bankApi.get(
-                `/accounts/customer/${customerId}`
-            );
+    try {
+      const response =
+        await bankApi.get(
+          "/accounts/me"
+        );
 
-        setAccounts(response.data);
-
+      setAccounts(response.data);
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message ||
+          "Unable to load your accounts."
+      );
+    } finally {
+      setLoading(false);
     }
+  }
 
-    return (
+  function formatMoney(amount) {
+    return Number(
+      amount ?? 0
+    ).toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
+    });
+  }
 
-        <main className="page">
+  return (
+    <main className="page">
+      <div className="page-heading">
+        <div>
+          <h1>My Accounts</h1>
 
-            <h1>My Accounts</h1>
+          <p>
+            View your checking and savings
+            accounts.
+          </p>
+        </div>
 
-            <div className="dashboard-grid">
+        <button
+          type="button"
+          className="secondary-button"
+          onClick={loadAccounts}
+        >
+          Refresh
+        </button>
+      </div>
 
-                {accounts.map(account => (
+      {error && (
+        <div className="alert error-alert">
+          {error}
+        </div>
+      )}
 
-                    <div
-                        className="card"
-                        key={account.id}
-                    >
+      {loading ? (
+        <p>Loading accounts...</p>
+      ) : accounts.length === 0 ? (
+        <section className="panel">
+          <p>
+            You do not currently have any
+            accounts.
+          </p>
+        </section>
+      ) : (
+        <div className="dashboard-grid">
+          {accounts.map((account) => (
+            <div
+              className="card"
+              key={account.id}
+            >
+              <h2>
+                {account.accountType}
+              </h2>
 
-                        <h2>{account.accountType}</h2>
+              <h3>
+                {formatMoney(
+                  account.balance
+                )}
+              </h3>
 
-                        <h3>
-
-                            $
-
-                            {Number(account.balance)
-                                .toLocaleString()}
-
-                        </h3>
-
-                    </div>
-
-                ))}
-
+              <p className="id-cell">
+                Account ID: {account.id}
+              </p>
             </div>
-
-        </main>
-
-    );
-
+          ))}
+        </div>
+      )}
+    </main>
+  );
 }
 
 export default MyAccountsPage;

@@ -26,6 +26,8 @@ public class Customer {
     @Size(min = 8, message = "Password must be at least 8 characters.")
     private String password;
 
+    private Role role;
+
     public Customer() {
     }
 
@@ -34,6 +36,7 @@ public class Customer {
         this.lastName = lastName;
         this.username = username;
         this.password = password;
+        this.role = Role.CUSTOMER;
     }
 
     public String getId() {
@@ -76,5 +79,12 @@ public class Customer {
         this.password = password;
     }
 
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
     
 }

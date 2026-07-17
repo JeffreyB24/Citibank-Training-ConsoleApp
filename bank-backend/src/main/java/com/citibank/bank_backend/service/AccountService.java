@@ -15,6 +15,7 @@ import com.citibank.bank_backend.model.Transaction;
 import com.citibank.bank_backend.model.TransactionType;
 import com.citibank.bank_backend.repository.TransactionRepository;
 import com.citibank.bank_backend.exception.ResourceNotFoundException;
+import com.citibank.bank_backend.model.Role;
 
 @Service
 public class AccountService {
@@ -267,5 +268,115 @@ public class AccountService {
         accountRepository.deleteAll(customerAccounts);
         customerRepository.deleteById(customerId);
     }
+
+    private Account getAuthorizedAccount(
+        String accountId,
+        String loggedInCustomerId,
+        Role role
+    ) {
+        Account account = accountRepository.findById(accountId).orElseThrow(
+                () -> new ResourceNotFoundException("Account was not found.")
+        );
+
+        boolean isAdmin = role == Role.ADMIN;
+
+        boolean ownsAccount = 
+                account.getCustomerId()
+                        .equals(loggedInCustomerId);
+
+        if (!isAdmin && !ownsAccount) {
+                throw new SecurityException(
+                        "You do not have permission to access this account."
+                );
+        }
+
+        return account;
+    }
+
+    public Account getAuthorizedAccountById(
+        String accountId,
+        String loggedInCustomerId,
+        Role role
+    ) {
+        return getAuthorizedAccountById (
+                accountId,
+                loggedInCustomerId,
+                role
+        );
+    }
+
+    public Account depositAuthorized(
+        String accountId,
+        BigDecimal amount,
+        String loggedInCustomerId,
+        Role role
+    ) {
+        getAuthorizedAccount(
+                accountId, 
+                loggedInCustomerId, 
+                role
+        );
+
+        return deposit(accountId, amount);
+    }
+
+    public Account withdrawAuthorized(
+        String accountId,
+        BigDecimal amount,
+        String loggedInCustomerId,
+        Role role
+    ) {
+        getAuthorizedAccount(
+                accountId, 
+                loggedInCustomerId,
+                role
+        );
+
+        return withdraw(accountId, amount);
+    }
+
+    public List<Transaction> getAuthorizedTransactions(
+        String accountId,
+        String loggedCusomterId,
+        Role role
+    ) {
+        getAuthorizedAccount(accountId, loggedCusomterId, role);
+
+        return getTransactions(accountId);
+    }
+
+    public void transferAuthorized(
+        TransferRequest request,
+        String loggedInCustomerId,
+        Role role
+        ) {
+                Account fromAccount = getAuthorizedAccount(
+                         request.getFromAccountId(),
+                        loggedInCustomerId,
+                role
+        );
+
+        Account toAccount = getAuthorizedAccount(
+                request.getToAccountId(),
+                loggedInCustomerId,
+                role
+        );
+
+        if (role == Role.CUSTOMER) {
+                boolean sameOwner =
+                        fromAccount.getCustomerId()
+                                .equals(toAccount.getCustomerId());
+
+                if (!sameOwner) {
+                        throw new SecurityException(
+                                "Customers may only transfer between their own accounts."
+                        );
+                }
+        }
+
+        transfer(request);
+
+        }
+
 }
 

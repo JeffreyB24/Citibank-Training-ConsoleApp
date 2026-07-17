@@ -293,3 +293,105 @@
   margin-top: 24px;
 }
 
+.logout-button {
+  width: 100%;
+  border: none;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 250px;
+  min-height: 100vh;
+  padding: 25px;
+  background-color: #0f172a;
+  color: white;
+}
+
+.sidebar h2 {
+  margin-top: 0;
+}
+
+.sidebar-role {
+  margin-bottom: 35px;
+  color: #94a3b8;
+}
+
+.sidebar-link {
+  display: block;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  color: white;
+  text-align: left;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.sidebar-link:hover {
+  background-color: #1e293b;
+}
+
+.sidebar-link.active {
+  background-color: #056dae;
+}
+
+.logout {
+  margin-top: 40px;
+  background-color: #991b1b;
+}
+
+.logout-button {
+  border: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: 30px;
+  background-color: #f4f6f8;
+}
+
+.nav-logout-button {
+  padding: 7px 12px;
+  border: 1px solid white;
+  border-radius: 6px;
+  background-color: transparent;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.nav-logout-button:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.history-account-select {
+  max-width: 420px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 800px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-height: auto;
+  }
+
+  .content {
+    padding: 20px;
+  }
+}
+
