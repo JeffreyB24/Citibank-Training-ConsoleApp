@@ -48,7 +48,7 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "https://citibank-training-consoleapp-production.up.railway.app"
+                "https://citibank-training.up.railway.app"
         ));
 
         configuration.setAllowedMethods(List.of(
