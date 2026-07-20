@@ -5427,3 +5427,52 @@ width:100%;
     align-items: flex-start;
   }
 }
+
+/* Landing Page preview spacing fixes */
+.account-preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.account-preview-card strong,
+.account-preview-card span,
+.account-preview-card p {
+  display: block;
+  margin: 0;
+}
+
+.preview-section-heading {
+  align-items: center;
+  gap: 20px;
+}
+
+.preview-transaction {
+  gap: 16px;
+}
+
+.transaction-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: 0;
+}
+
+.transaction-copy strong,
+.transaction-copy span {
+  display: block;
+}
+
+.preview-transaction > strong {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* Landing nav fix */
+.landing-nav-actions{
+  justify-content: flex-end;
+}
+
+.landing-nav-actions .primary-button{
+  min-width: 170px;
+}

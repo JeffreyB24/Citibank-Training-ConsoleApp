@@ -39,13 +39,6 @@ function LandingPage() {
             >
               Sign In
             </Link>
-
-            <Link
-              to="/register"
-              className="button button-primary"
-            >
-              Open an Account
-            </Link>
           </div>
         </div>
       </header>
