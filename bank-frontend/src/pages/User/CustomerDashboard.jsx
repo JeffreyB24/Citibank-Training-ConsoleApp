@@ -19,7 +19,7 @@ function CustomerDashboard() {
     setErrorMessage("");
 
     try {
-      const response = await bankApi.get("/accounts.me");
+      const response = await bankApi.get("/accounts/me");
 
       setAccounts(
         Array.isArray(response.data)
