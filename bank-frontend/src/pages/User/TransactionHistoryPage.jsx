@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -19,6 +20,9 @@ function TransactionHistoryPage() {
 
   const [loading, setLoading] =
     useState(true);
+
+  const [transactionsLoading, setTransactionsLoading] =
+    useState(false);
 
   const [error, setError] =
     useState("");
@@ -51,6 +55,7 @@ function TransactionHistoryPage() {
           firstAccountId
         );
       } else {
+        setSelectedAccount("");
         setTransactions([]);
       }
     } catch (requestError) {
@@ -70,6 +75,8 @@ function TransactionHistoryPage() {
       return;
     }
 
+    setTransactionsLoading(true);
+
     try {
       const response =
         await bankApi.get(
@@ -81,6 +88,8 @@ function TransactionHistoryPage() {
       setError(
         getErrorMessage(requestError)
       );
+    } finally {
+      setTransactionsLoading(false);
     }
   }
 
@@ -126,115 +135,515 @@ function TransactionHistoryPage() {
 
     return new Date(
       value
-    ).toLocaleString();
+    ).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
   }
 
-  return (
-    <main className="page">
-      <h1>Transaction History</h1>
+  function formatAccountNumber(
+    accountId
+  ) {
+    const value = String(
+      accountId ?? ""
+    );
 
-      <p>
-        Review activity from your bank
-        accounts.
-      </p>
+    return `•••• ${value
+      .slice(-4)
+      .padStart(4, "0")}`;
+  }
+
+  function getTransactionDetails(
+    transaction
+  ) {
+    const type = String(
+      transaction.type || "Transaction"
+    ).toLowerCase();
+
+    if (
+      type.includes("deposit") ||
+      type.includes("credit")
+    ) {
+      return {
+        icon: "↓",
+        label:
+          transaction.type || "Deposit",
+        sign: "+",
+        className:
+          "history-positive",
+      };
+    }
+
+    if (
+      type.includes("withdraw")
+    ) {
+      return {
+        icon: "↑",
+        label:
+          transaction.type ||
+          "Withdrawal",
+        sign: "−",
+        className:
+          "history-negative",
+      };
+    }
+
+    if (
+      type.includes("transfer")
+    ) {
+      return {
+        icon: "↔",
+        label:
+          transaction.type ||
+          "Transfer",
+        sign: "",
+        className:
+          "history-transfer",
+      };
+    }
+
+    return {
+      icon: "$",
+      label:
+        transaction.type ||
+        "Transaction",
+      sign: "",
+      className:
+        "history-neutral",
+    };
+  }
+
+  const selectedAccountDetails =
+    useMemo(
+      () =>
+        accounts.find(
+          (account) =>
+            String(account.id) ===
+            String(selectedAccount)
+        ),
+      [accounts, selectedAccount]
+    );
+
+  const transactionSummary =
+    useMemo(() => {
+      return transactions.reduce(
+        (summary, transaction) => {
+          const amount = Number(
+            transaction.amount ?? 0
+          );
+
+          const type = String(
+            transaction.type || ""
+          ).toLowerCase();
+
+          summary.totalTransactions += 1;
+
+          if (
+            type.includes("deposit") ||
+            type.includes("credit")
+          ) {
+            summary.totalDeposits +=
+              amount;
+          } else if (
+            type.includes("withdraw")
+          ) {
+            summary.totalWithdrawals +=
+              amount;
+          } else if (
+            type.includes("transfer")
+          ) {
+            summary.totalTransfers +=
+              amount;
+          }
+
+          return summary;
+        },
+        {
+          totalTransactions: 0,
+          totalDeposits: 0,
+          totalWithdrawals: 0,
+          totalTransfers: 0,
+        }
+      );
+    }, [transactions]);
+
+  return (
+    <main className="page transaction-history-page">
+      <section className="history-hero">
+        <div>
+          <p className="page-eyebrow">
+            Account activity
+          </p>
+
+          <h1>
+            Transaction History
+          </h1>
+
+          <p>
+            Review deposits,
+            withdrawals, transfers, and
+            recent activity from your bank
+            accounts.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="history-refresh-button"
+          onClick={loadAccounts}
+          disabled={loading}
+        >
+          <span>↻</span>
+
+          {loading
+            ? "Refreshing..."
+            : "Refresh History"}
+        </button>
+      </section>
 
       {error && (
-        <div className="alert error-alert">
-          {error}
+        <div className="alert error-alert history-alert">
+          <span className="history-alert-icon">
+            !
+          </span>
+
+          <div>
+            <strong>
+              Unable to load history
+            </strong>
+
+            <p>{error}</p>
+          </div>
         </div>
       )}
 
       {loading ? (
-        <p>Loading transactions...</p>
+        <section className="history-loading-state">
+          <div className="loading-spinner" />
+
+          <h2>
+            Loading transaction history
+          </h2>
+
+          <p>
+            Please wait while we retrieve
+            your accounts and recent
+            activity.
+          </p>
+        </section>
       ) : accounts.length === 0 ? (
-        <section className="panel">
+        <section className="history-empty-account-state">
+          <div className="history-empty-icon">
+            🏦
+          </div>
+
+          <h2>No accounts found</h2>
+
           <p>
             You do not currently have any
-            accounts.
+            accounts with transaction
+            history.
           </p>
         </section>
       ) : (
-        <section className="panel">
-          <div className="form-group history-account-select">
-            <label htmlFor="historyAccount">
-              Account
-            </label>
+        <>
+          <section className="history-account-panel">
+            <div className="history-account-info">
+              <div>
+                <span>
+                  Viewing activity for
+                </span>
 
-            <select
-              id="historyAccount"
-              value={selectedAccount}
-              onChange={
-                handleAccountChange
-              }
-            >
-              {accounts.map(
-                (account) => (
-                  <option
-                    key={account.id}
-                    value={account.id}
-                  >
-                    {
-                      account.accountType
-                    }{" "}
-                    -{" "}
-                    {formatMoney(
-                      account.balance
-                    )}
-                  </option>
-                )
-              )}
-            </select>
-          </div>
+                <h2>
+                  {selectedAccountDetails
+                    ?.accountType ||
+                    "Bank Account"}
+                </h2>
 
-          {transactions.length === 0 ? (
-            <p>
-              No transactions are available
-              for this account.
-            </p>
-          ) : (
-            <div className="table-container">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
+                <p>
+                  Account{" "}
+                  {formatAccountNumber(
+                    selectedAccountDetails?.id
+                  )}
+                </p>
+              </div>
 
-                <tbody>
-                  {transactions.map(
-                    (transaction) => (
-                      <tr
+              <div className="history-account-balance">
+                <span>
+                  Current balance
+                </span>
+
+                <strong>
+                  {formatMoney(
+                    selectedAccountDetails
+                      ?.balance
+                  )}
+                </strong>
+              </div>
+            </div>
+
+            <div className="history-account-control">
+              <label htmlFor="historyAccount">
+                Select account
+              </label>
+
+              <select
+                id="historyAccount"
+                value={selectedAccount}
+                onChange={
+                  handleAccountChange
+                }
+              >
+                {accounts.map(
+                  (account) => (
+                    <option
+                      key={account.id}
+                      value={account.id}
+                    >
+                      {
+                        account.accountType
+                      }{" "}
+                      {formatAccountNumber(
+                        account.id
+                      )}{" "}
+                      —{" "}
+                      {formatMoney(
+                        account.balance
+                      )}
+                    </option>
+                  )
+                )}
+              </select>
+            </div>
+          </section>
+
+          <section className="history-summary-grid">
+            <article className="history-summary-card">
+              <div className="history-summary-icon history-count-icon">
+                #
+              </div>
+
+              <div>
+                <span>
+                  Total transactions
+                </span>
+
+                <strong>
+                  {
+                    transactionSummary.totalTransactions
+                  }
+                </strong>
+
+                <p>
+                  Recorded activity
+                </p>
+              </div>
+            </article>
+
+            <article className="history-summary-card">
+              <div className="history-summary-icon history-deposit-icon">
+                ↓
+              </div>
+
+              <div>
+                <span>
+                  Total deposits
+                </span>
+
+                <strong>
+                  {formatMoney(
+                    transactionSummary.totalDeposits
+                  )}
+                </strong>
+
+                <p>
+                  Funds added
+                </p>
+              </div>
+            </article>
+
+            <article className="history-summary-card">
+              <div className="history-summary-icon history-withdraw-icon">
+                ↑
+              </div>
+
+              <div>
+                <span>
+                  Total withdrawals
+                </span>
+
+                <strong>
+                  {formatMoney(
+                    transactionSummary.totalWithdrawals
+                  )}
+                </strong>
+
+                <p>
+                  Funds withdrawn
+                </p>
+              </div>
+            </article>
+
+            <article className="history-summary-card">
+              <div className="history-summary-icon history-transfer-icon">
+                ↔
+              </div>
+
+              <div>
+                <span>
+                  Total transfers
+                </span>
+
+                <strong>
+                  {formatMoney(
+                    transactionSummary.totalTransfers
+                  )}
+                </strong>
+
+                <p>
+                  Funds transferred
+                </p>
+              </div>
+            </article>
+          </section>
+
+          <section className="history-activity-panel">
+            <div className="history-panel-heading">
+              <div>
+                <p className="page-eyebrow">
+                  Recent activity
+                </p>
+
+                <h2>
+                  Account Transactions
+                </h2>
+
+                <p>
+                  All available transactions
+                  for your selected account.
+                </p>
+              </div>
+
+              <div className="history-status-pill">
+                <span />
+
+                Account active
+              </div>
+            </div>
+
+            {transactionsLoading ? (
+              <div className="history-inline-loading">
+                <div className="loading-spinner" />
+
+                <p>
+                  Loading transactions...
+                </p>
+              </div>
+            ) : transactions.length ===
+              0 ? (
+              <div className="history-no-transactions">
+                <div className="history-no-transaction-icon">
+                  ↔
+                </div>
+
+                <h3>
+                  No transactions found
+                </h3>
+
+                <p>
+                  Activity will appear here
+                  after a deposit,
+                  withdrawal, or transfer is
+                  completed.
+                </p>
+              </div>
+            ) : (
+              <div className="history-transaction-list">
+                {transactions.map(
+                  (
+                    transaction,
+                    index
+                  ) => {
+                    const details =
+                      getTransactionDetails(
+                        transaction
+                      );
+
+                    return (
+                      <article
+                        className="history-transaction-row"
                         key={
-                          transaction.id
+                          transaction.id ||
+                          `${transaction.type}-${index}`
                         }
                       >
-                        <td>
-                          {
-                            transaction.type
-                          }
-                        </td>
+                        <div
+                          className={`history-transaction-icon ${details.className}`}
+                        >
+                          {details.icon}
+                        </div>
 
-                        <td>
+                        <div className="history-transaction-info">
+                          <strong>
+                            {details.label}
+                          </strong>
+
+                          <span>
+                            {formatDate(
+                              transaction
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="history-transaction-account">
+                          <span>
+                            Account
+                          </span>
+
+                          <strong>
+                            {formatAccountNumber(
+                              selectedAccount
+                            )}
+                          </strong>
+                        </div>
+
+                        <div
+                          className={`history-transaction-amount ${details.className}`}
+                        >
+                          {details.sign}
                           {formatMoney(
                             transaction.amount
                           )}
-                        </td>
+                        </div>
+                      </article>
+                    );
+                  }
+                )}
+              </div>
+            )}
+          </section>
 
-                        <td>
-                          {formatDate(
-                            transaction
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  )}
-                </tbody>
-              </table>
+          <section className="history-security-note">
+            <div className="history-security-icon">
+              ✓
             </div>
-          )}
-        </section>
+
+            <div>
+              <h2>
+                Secure account records
+              </h2>
+
+              <p>
+                Your transaction history is
+                only available after secure
+                authentication.
+              </p>
+            </div>
+          </section>
+        </>
       )}
     </main>
   );

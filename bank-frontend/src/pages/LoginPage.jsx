@@ -1,9 +1,5 @@
-import {
-  useEffect,
-  useState,
-} from "react";
-
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import bankApi from "../api/bankApi";
 
 function LoginPage() {
@@ -14,38 +10,27 @@ function LoginPage() {
     password: "",
   });
 
-  const [submitting, setSubmitting] =
-    useState(false);
-
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const token =
-      localStorage.getItem("token");
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
 
-    const role =
-      localStorage.getItem("role");
-
-    if (!token) {
-      return;
-    }
+    if (!token) return;
 
     if (role === "ADMIN") {
-      navigate("/admin", {
-        replace: true,
-      });
+      navigate("/admin", { replace: true });
     } else if (role === "CUSTOMER") {
-      navigate("/customer", {
-        replace: true,
-      });
+      navigate("/customer", { replace: true });
     }
   }, [navigate]);
 
   function handleChange(event) {
     const { name, value } = event.target;
 
-    setFormData((currentForm) => ({
-      ...currentForm,
+    setFormData((current) => ({
+      ...current,
       [name]: value,
     }));
   }
@@ -57,50 +42,21 @@ function LoginPage() {
     setError("");
 
     try {
-      const response = await bankApi.post(
-        "/auth/login",
-        formData
-      );
+      const response = await bankApi.post("/auth/login", formData);
 
-      const {
-        token,
-        customerId,
-        username,
-        role,
-      } = response.data;
+      const { token, customerId, username, role } = response.data;
 
-      localStorage.setItem(
-        "token",
-        token
-      );
-
-      localStorage.setItem(
-        "customerId",
-        customerId
-      );
-
-      localStorage.setItem(
-        "username",
-        username
-      );
-
-      localStorage.setItem(
-        "role",
-        role
-      );
+      localStorage.setItem("token", token);
+      localStorage.setItem("customerId", customerId);
+      localStorage.setItem("username", username);
+      localStorage.setItem("role", role);
 
       if (role === "ADMIN") {
-        navigate("/admin", {
-          replace: true,
-        });
+        navigate("/admin", { replace: true });
       } else if (role === "CUSTOMER") {
-        navigate("/customer", {
-          replace: true,
-        });
+        navigate("/customer", { replace: true });
       } else {
-        setError(
-          "This account does not have a valid role."
-        );
+        setError("This account does not have a valid role.");
       }
     } catch (requestError) {
       setError(
@@ -113,64 +69,133 @@ function LoginPage() {
   }
 
   return (
-    <main className="login-page">
-      <section className="login-card">
-        <h1>Citibank Banking System</h1>
+    <main className="login-page modern-login">
 
-        <p>Please sign in to continue.</p>
+      <div className="login-left">
 
-        {error && (
-          <div className="alert error-alert">
-            {error}
-          </div>
-        )}
+        <Link to="/" className="login-logo">
+          🏦 Citibank
+        </Link>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="username">
-              Username
-            </label>
+        <h1>
+          Secure Banking,
+          <br />
+          Simplified.
+        </h1>
 
-            <input
-              id="username"
-              name="username"
-              type="text"
-              value={formData.username}
-              onChange={handleChange}
-              placeholder="Enter username"
-              autoComplete="username"
-              required
-            />
-          </div>
+        <p>
+          Access your accounts, review transactions,
+          transfer funds, and manage your finances
+          securely from anywhere in the world.
+        </p>
 
-          <div className="form-group">
-            <label htmlFor="password">
-              Password
-            </label>
+        <div className="login-features">
 
-            <input
-              id="password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter password"
-              autoComplete="current-password"
-              required
-            />
+          <div className="feature">
+            <span>🔒</span>
+            <div>
+              <strong>256-bit Encryption</strong>
+              <p>Your information is protected.</p>
+            </div>
           </div>
 
-          <button
-            type="submit"
-            className="primary-button"
-            disabled={submitting}
-          >
-            {submitting
-              ? "Signing in..."
-              : "Sign In"}
-          </button>
-        </form>
-      </section>
+          <div className="feature">
+            <span>⚡</span>
+            <div>
+              <strong>Instant Transfers</strong>
+              <p>Move money in seconds.</p>
+            </div>
+          </div>
+
+          <div className="feature">
+            <span>🌎</span>
+            <div>
+              <strong>24/7 Banking</strong>
+              <p>Access your finances anytime.</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div className="login-right">
+
+        <section className="login-card modern-card">
+
+          <h2>Welcome Back</h2>
+
+          <p className="login-subtitle">
+            Sign in to continue to your dashboard.
+          </p>
+
+          {error && (
+            <div className="alert error-alert">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+
+            <div className="form-group">
+
+              <label>Username</label>
+
+              <input
+                id="username"
+                name="username"
+                type="text"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="Enter your username"
+                autoComplete="username"
+                required
+              />
+
+            </div>
+
+            <div className="form-group">
+
+              <label>Password</label>
+
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                autoComplete="current-password"
+                required
+              />
+
+            </div>
+
+            <div className="login-options">
+
+              <label className="remember-me">
+                <input type="checkbox" />
+                Remember me
+              </label>
+
+              <a href="#">Forgot Password?</a>
+
+            </div>
+
+            <button
+              type="submit"
+              className="primary-button login-button"
+              disabled={submitting}
+            >
+              {submitting ? "Signing In..." : "Sign In"}
+            </button>
+
+          </form>
+
+        </section>
+
+      </div>
+
     </main>
   );
 }

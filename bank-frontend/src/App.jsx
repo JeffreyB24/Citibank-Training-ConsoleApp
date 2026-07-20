@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AdminLayout from "./components/AdminLayout";
 import CustomerLayout from "./components/CustomerLayout";
 
+import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -27,7 +28,22 @@ function App() {
     <Routes>
       <Route
         path="/"
+        element={<LandingPage />}
+      />
+
+      <Route
+        path="/login"
         element={<LoginPage />}
+      />
+
+      <Route
+        path="/register"
+        element={
+          <Navigate
+            to="/login"
+            replace
+          />
+        }
       />
 
       <Route
@@ -37,14 +53,10 @@ function App() {
           />
         }
       >
-        <Route
-          element={<AdminLayout />}
-        >
+        <Route element={<AdminLayout />}>
           <Route
             path="/admin"
-            element={
-              <AdminDashboard />
-            }
+            element={<AdminDashboard />}
           />
 
           <Route
@@ -59,9 +71,7 @@ function App() {
 
           <Route
             path="/admin/transactions"
-            element={
-              <TransactionsPage />
-            }
+            element={<TransactionsPage />}
           />
         </Route>
       </Route>
@@ -73,14 +83,10 @@ function App() {
           />
         }
       >
-        <Route
-          element={<CustomerLayout />}
-        >
+        <Route element={<CustomerLayout />}>
           <Route
             path="/customer"
-            element={
-              <CustomerDashboard />
-            }
+            element={<CustomerDashboard />}
           />
 
           <Route
@@ -90,16 +96,12 @@ function App() {
 
           <Route
             path="/customer/transactions"
-            element={
-              <CustomerTransactionsPage />
-            }
+            element={<CustomerTransactionsPage />}
           />
 
           <Route
             path="/customer/history"
-            element={
-              <TransactionHistoryPage />
-            }
+            element={<TransactionHistoryPage />}
           />
         </Route>
       </Route>
